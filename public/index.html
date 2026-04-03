@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Finance Backend UI</title>
+</head>
+<body>
+  <h1>Finance Dashboard</h1>
+
+  <!-- Registration -->
+  <h2>Register</h2>
+  <input id="regName" placeholder="Name">
+  <input id="regEmail" placeholder="Email">
+  <input id="regPassword" type="password" placeholder="Password">
+  <select id="regRole">
+    <option value="Viewer">Viewer</option>
+    <option value="Analyst">Analyst</option>
+    <option value="Admin">Admin</option>
+  </select>
+  <button onclick="register()">Register</button>
+
+  <!-- Login -->
+  <h2>Login</h2>
+  <input id="loginEmail" placeholder="Email">
+  <input id="loginPassword" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+
+  <!-- Create Record -->
+  <h2>Create Record (Admin)</h2>
+  <input id="recAmount" placeholder="Amount">
+  <select id="recType">
+    <option value="Income">Income</option>
+    <option value="Expense">Expense</option>
+  </select>
+  <input id="recCategory" placeholder="Category">
+  <input id="recDate" type="date">
+  <input id="recNotes" placeholder="Notes">
+  <button onclick="createRecord()">Add Record</button>
+
+  <!-- Dashboard Summary -->
+  <h2>Dashboard Summary</h2>
+  <p>Total Income: <span id="income">-</span></p>
+  <p>Total Expense: <span id="expense">-</span></p>
+  <p>Net Balance: <span id="balance">-</span></p>
+  <button onclick="loadSummary()">Refresh Summary</button>
+
+  <script>
+    let token = "";
+
+    async function register() {
+      const res = await fetch('/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('regName').value,
+          email: document.getElementById('regEmail').value,
+          password: document.getElementById('regPassword').value,
+          role: document.getElementById('regRole').value
+        })
+      });
+      alert(await res.text());
+    }
+
+    async function login() {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('loginEmail').value,
+          password: document.getElementById('loginPassword').value
+        })
+      });
+      const data = await res.json();
+      token = data.token;
+      alert("Logged in! Token saved.");
+    }
+
+    async function createRecord() {
+      const res = await fetch('/records', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({
+          amount: document.getElementById('recAmount').value,
+          type: document.getElementById('recType').value,
+          category: document.getElementById('recCategory').value,
+          date: document.getElementById('recDate').value,
+          notes: document.getElementById('recNotes').value
+        })
+      });
+      alert(await res.text());
+    }
+
+    async function loadSummary() {
+      const res = await fetch('/dashboard/summary', {
+        headers: { 'Authorization': token }
+      });
+      const data = await res.json();
+      document.getElementById('income').textContent = data.totalIncome;
+      document.getElementById('expense').textContent = data.totalExpense;
+      document.getElementById('balance').textContent = data.netBalance;
+    }
+  </script>
+</body>
+</html>

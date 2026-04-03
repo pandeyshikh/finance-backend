@@ -1,8 +1,8 @@
-const router = require('express').Router();
-const auth = require('../middleware/auth');
-const { summary } = require('../controllers/dashboardController');
+const express = require('express');
+const router = express.Router();
+const { getSummary } = require('../controllers/dashboardController');
+const authMiddleware = require('../middleware/auth'); // ✅ matches file name
 
-router.use(auth);
-router.get('/', summary);
+router.get('/summary', authMiddleware(), getSummary);
 
 module.exports = router;

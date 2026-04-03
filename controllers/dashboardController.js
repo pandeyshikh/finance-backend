@@ -1,13 +1,16 @@
 const db = require('../config/db');
 
-exports.summary = async (req, res) => {
-  const [rows] = await db.query(
-    `SELECT 
-     SUM(CASE WHEN type='income' THEN amount ELSE 0 END) income,
-     SUM(CASE WHEN type='expense' THEN amount ELSE 0 END) expense
-     FROM financial_records WHERE user_id=?`,
-    [req.user.id]
-  );
+exports.getSummary = async (req, res) => {
+  try {
+    const [income] = await db.query("SELECT SUM(amount) AS totalIncome FROM records WHERE type='Income'");
+    const [expense] = await db.query("SELECT SUM(amount) AS totalExpense FROM records WHERE type='Expense'");
 
-  res.json(rows[0]);
+    const totalIncome = income[0].totalIncome || 0;
+    const totalExpense = expense[0].totalExpense || 0;
+    const netBalance = totalIncome - totalExpense;
+
+    res.json({ totalIncome, totalExpense, netBalance });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error', details: err });
+  }
 };

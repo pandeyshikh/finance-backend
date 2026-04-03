@@ -1,9 +1,9 @@
-const router = require('express').Router();
-const auth = require('../middleware/auth');
+const express = require('express');
+const router = express.Router();
 const { createRecord, getRecords } = require('../controllers/recordController');
+const authMiddleware = require('../middleware/auth'); // ✅ matches file name
 
-router.use(auth);
-router.post('/', createRecord);
-router.get('/', getRecords);
+router.post('/', authMiddleware('Admin'), createRecord);
+router.get('/', authMiddleware(), getRecords);
 
 module.exports = router;
